@@ -17,7 +17,9 @@ public class PgVectorTypeHandler extends BaseTypeHandler<float[]> {
         sb.append('[');
         for (int j = 0; j < parameter.length; j++) {
             sb.append(parameter[j]);
-            if (j < parameter.length - 1) sb.append(',');
+            if (j < parameter.length - 1) {
+                sb.append(',');
+            }
         }
         sb.append(']');
         ps.setObject(i, sb.toString(), Types.OTHER);
@@ -39,10 +41,14 @@ public class PgVectorTypeHandler extends BaseTypeHandler<float[]> {
     }
 
     private float[] parse(String vectorText) {
-        if (vectorText == null) return null;
+        if (vectorText == null) {
+            return null;
+        }
         // 去掉 "[ ]"
         vectorText = vectorText.replace("[", "").replace("]", "");
-        if (vectorText.isBlank()) return new float[0];
+        if (vectorText.isBlank()) {
+            return new float[0];
+        }
         String[] parts = vectorText.split(",");
         float[] arr = new float[parts.length];
         for (int i = 0; i < parts.length; i++) {
