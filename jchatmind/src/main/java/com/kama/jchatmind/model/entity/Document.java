@@ -24,6 +24,11 @@ public class Document {
     // JSON String
     private String metadata;
 
+    // 文档状态：PARSING, SUCCESS, FAILED
+    private String status;
+
+    private Boolean deleted; // 软删除标志
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -46,6 +51,8 @@ public class Document {
             && (this.getFiletype() == null ? other.getFiletype() == null : this.getFiletype().equals(other.getFiletype()))
             && (this.getSize() == null ? other.getSize() == null : this.getSize().equals(other.getSize()))
             && (this.getMetadata() == null ? other.getMetadata() == null : this.getMetadata().equals(other.getMetadata()))
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+            && (this.getDeleted() == null ? other.getDeleted() == null : this.getDeleted().equals(other.getDeleted()))
             && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
             && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
@@ -60,6 +67,8 @@ public class Document {
         result = prime * result + ((getFiletype() == null) ? 0 : getFiletype().hashCode());
         result = prime * result + ((getSize() == null) ? 0 : getSize().hashCode());
         result = prime * result + ((getMetadata() == null) ? 0 : getMetadata().hashCode());
+        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
+        result = prime * result + ((getDeleted() == null) ? 0 : getDeleted().hashCode());
         result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
         result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
@@ -76,6 +85,8 @@ public class Document {
                 ", filetype=" + filetype +
                 ", size=" + size +
                 ", metadata=" + metadata +
+                ", status=" + status +
+                ", deleted=" + deleted +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 "]";

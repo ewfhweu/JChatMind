@@ -20,6 +20,9 @@ public class DocumentDTO {
 
     private MetaData metadata;
 
+    // 文档状态：PARSING, SUCCESS, FAILED
+    private String status;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

@@ -24,4 +24,12 @@ public interface DocumentMapper {
     int deleteById(String id);
 
     int updateById(Document document);
+
+    int softDeleteById(String id);
+
+    List<Document> selectAllNotDeleted();
+
+    List<Document> selectByKbIdNotDeleted(String kbId);
+
+    List<Document> selectDeleted();
 }

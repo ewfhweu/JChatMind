@@ -3,6 +3,7 @@ package com.kama.jchatmind.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kama.jchatmind.converter.ChatSessionConverter;
 import com.kama.jchatmind.exception.BizException;
+import com.kama.jchatmind.exception.ErrorCode;
 import com.kama.jchatmind.mapper.ChatSessionMapper;
 import com.kama.jchatmind.model.dto.ChatSessionDTO;
 import com.kama.jchatmind.model.entity.ChatSession;
@@ -57,7 +58,7 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
                 throw new RuntimeException(e);
             }
         }
-        throw new BizException("聊天会话不存在: " + chatSessionId);
+        throw BizException.of(ErrorCode.CHAT_SESSION_NOT_FOUND, "聊天会话不存在: " + chatSessionId);
     }
 
     @Override
@@ -94,15 +95,15 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
             // 插入数据库，ID 由数据库自动生成
             int result = chatSessionMapper.insert(chatSession);
             if (result <= 0) {
-                throw new BizException("创建聊天会话失败");
+                throw BizException.of(ErrorCode.CHAT_SESSION_CREATE_FAILED);
             }
-            
+
             // 返回生成的 chatSessionId
             return CreateChatSessionResponse.builder()
                     .chatSessionId(chatSession.getId())
                     .build();
         } catch (JsonProcessingException e) {
-            throw new BizException("创建聊天会话时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.CHAT_SESSION_CREATE_FAILED, "创建聊天会话时发生序列化错误: " + e.getMessage(), e);
         }
     }
 
@@ -110,12 +111,12 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
     public void deleteChatSession(String chatSessionId) {
         ChatSession chatSession = chatSessionMapper.selectById(chatSessionId);
         if (chatSession == null) {
-            throw new BizException("聊天会话不存在: " + chatSessionId);
+            throw BizException.of(ErrorCode.CHAT_SESSION_NOT_FOUND, "聊天会话不存在: " + chatSessionId);
         }
-        
+
         int result = chatSessionMapper.deleteById(chatSessionId);
         if (result <= 0) {
-            throw new BizException("删除聊天会话失败");
+            throw BizException.of(ErrorCode.CHAT_SESSION_DELETE_FAILED);
         }
     }
 
@@ -125,7 +126,7 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
             // 查询现有的聊天会话
             ChatSession existingChatSession = chatSessionMapper.selectById(chatSessionId);
             if (existingChatSession == null) {
-                throw new BizException("聊天会话不存在: " + chatSessionId);
+                throw BizException.of(ErrorCode.CHAT_SESSION_NOT_FOUND, "聊天会话不存在: " + chatSessionId);
             }
             
             // 将现有 ChatSession 转换为 ChatSessionDTO
@@ -146,10 +147,10 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
             // 更新数据库
             int result = chatSessionMapper.updateById(updatedChatSession);
             if (result <= 0) {
-                throw new BizException("更新聊天会话失败");
+                throw BizException.of(ErrorCode.CHAT_SESSION_UPDATE_FAILED);
             }
         } catch (JsonProcessingException e) {
-            throw new BizException("更新聊天会话时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.CHAT_SESSION_UPDATE_FAILED, "更新聊天会话时发生序列化错误: " + e.getMessage(), e);
         }
     }
 }

@@ -234,6 +234,7 @@ public class JChatMind {
         Prompt prompt = Prompt.builder()
                 .chatOptions(this.chatOptions)
                 .messages(this.chatMemory.get(this.chatSessionId))
+
                 .build();
 
         this.lastChatResponse = this.chatClient

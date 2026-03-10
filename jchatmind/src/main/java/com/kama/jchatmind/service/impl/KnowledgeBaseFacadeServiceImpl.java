@@ -3,6 +3,7 @@ package com.kama.jchatmind.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kama.jchatmind.converter.KnowledgeBaseConverter;
 import com.kama.jchatmind.exception.BizException;
+import com.kama.jchatmind.exception.ErrorCode;
 import com.kama.jchatmind.mapper.KnowledgeBaseMapper;
 import com.kama.jchatmind.model.dto.KnowledgeBaseDTO;
 import com.kama.jchatmind.model.entity.KnowledgeBase;
@@ -60,15 +61,15 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
             // 插入数据库，ID 由数据库自动生成
             int result = knowledgeBaseMapper.insert(knowledgeBase);
             if (result <= 0) {
-                throw new BizException("创建知识库失败");
+                throw BizException.of(ErrorCode.KNOWLEDGE_BASE_CREATE_FAILED);
             }
-            
+
             // 返回生成的 knowledgeBaseId
             return CreateKnowledgeBaseResponse.builder()
                     .knowledgeBaseId(knowledgeBase.getId())
                     .build();
         } catch (JsonProcessingException e) {
-            throw new BizException("创建知识库时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.KNOWLEDGE_BASE_CREATE_FAILED, "创建知识库时发生序列化错误: " + e.getMessage(), e);
         }
     }
 
@@ -76,12 +77,12 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
     public void deleteKnowledgeBase(String knowledgeBaseId) {
         KnowledgeBase knowledgeBase = knowledgeBaseMapper.selectById(knowledgeBaseId);
         if (knowledgeBase == null) {
-            throw new BizException("知识库不存在: " + knowledgeBaseId);
+            throw BizException.of(ErrorCode.KNOWLEDGE_BASE_NOT_FOUND, "知识库不存在: " + knowledgeBaseId);
         }
-        
+
         int result = knowledgeBaseMapper.deleteById(knowledgeBaseId);
         if (result <= 0) {
-            throw new BizException("删除知识库失败");
+            throw BizException.of(ErrorCode.KNOWLEDGE_BASE_DELETE_FAILED);
         }
     }
 
@@ -91,7 +92,7 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
             // 查询现有的知识库
             KnowledgeBase existingKnowledgeBase = knowledgeBaseMapper.selectById(knowledgeBaseId);
             if (existingKnowledgeBase == null) {
-                throw new BizException("知识库不存在: " + knowledgeBaseId);
+                throw BizException.of(ErrorCode.KNOWLEDGE_BASE_NOT_FOUND, "知识库不存在: " + knowledgeBaseId);
             }
             
             // 将现有 KnowledgeBase 转换为 KnowledgeBaseDTO
@@ -111,10 +112,10 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
             // 更新数据库
             int result = knowledgeBaseMapper.updateById(updatedKnowledgeBase);
             if (result <= 0) {
-                throw new BizException("更新知识库失败");
+                throw BizException.of(ErrorCode.KNOWLEDGE_BASE_UPDATE_FAILED);
             }
         } catch (JsonProcessingException e) {
-            throw new BizException("更新知识库时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.KNOWLEDGE_BASE_UPDATE_FAILED, "更新知识库时发生序列化错误: " + e.getMessage(), e);
         }
     }
 }

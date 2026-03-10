@@ -1,11 +1,14 @@
 package com.kama.jchatmind.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.kama.jchatmind.agent.JChatMind;
 import com.kama.jchatmind.converter.ChatMessageConverter;
 import com.kama.jchatmind.event.ChatEvent;
 import com.kama.jchatmind.exception.BizException;
+import com.kama.jchatmind.exception.ErrorCode;
 import com.kama.jchatmind.mapper.ChatMessageMapper;
 import com.kama.jchatmind.model.dto.ChatMessageDTO;
+import com.kama.jchatmind.model.dto.KnowledgeBaseDTO;
 import com.kama.jchatmind.model.entity.ChatMessage;
 import com.kama.jchatmind.model.request.CreateChatMessageRequest;
 import com.kama.jchatmind.model.request.UpdateChatMessageRequest;
@@ -14,12 +17,15 @@ import com.kama.jchatmind.model.response.GetChatMessagesResponse;
 import com.kama.jchatmind.model.vo.ChatMessageVO;
 import com.kama.jchatmind.service.ChatMessageFacadeService;
 import lombok.AllArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -104,31 +110,30 @@ public class ChatMessageFacadeServiceImpl implements ChatMessageFacadeService {
     }
 
     private ChatMessage doCreateChatMessage(ChatMessageDTO chatMessageDTO) {
-        try {
-            // 将 ChatMessageDTO 转换为 ChatMessage 实体
-            ChatMessage chatMessage = chatMessageConverter.toEntity(chatMessageDTO);
-
-            // 设置创建时间和更新时间
-            LocalDateTime now = LocalDateTime.now();
-            chatMessage.setCreatedAt(now);
-            chatMessage.setUpdatedAt(now);
-            // 插入数据库，ID 由数据库自动生成
-            int result = chatMessageMapper.insert(chatMessage);
-            if (result <= 0) {
-                throw new BizException("创建聊天消息失败");
-            }
-            return chatMessage;
-        } catch (JsonProcessingException e) {
-            throw new BizException("创建聊天消息时发生序列化错误: " + e.getMessage());
+    try {
+        ChatMessage chatMessage = chatMessageConverter.toEntity(chatMessageDTO);
+        LocalDateTime now = LocalDateTime.now();
+        chatMessage.setCreatedAt(now);
+        chatMessage.setUpdatedAt(now);
+        
+        int result = chatMessageMapper.insert(chatMessage);
+        if (result <= 0) {
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_CREATE_FAILED);
         }
+
+        return chatMessage;
+    } catch (JsonProcessingException e) {
+        throw BizException.of(ErrorCode.CHAT_MESSAGE_CREATE_FAILED, "创建聊天消息时发生序列化错误: " + e.getMessage(), e);
     }
+}
+
 
     @Override
     public CreateChatMessageResponse appendChatMessage(String chatMessageId, String appendContent) {
         // 查询现有的聊天消息
         ChatMessage existingChatMessage = chatMessageMapper.selectById(chatMessageId);
         if (existingChatMessage == null) {
-            throw new BizException("聊天消息不存在: " + chatMessageId);
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_NOT_FOUND, "聊天消息不存在: " + chatMessageId);
         }
 
         // 将追加内容添加到现有内容后面
@@ -151,7 +156,7 @@ public class ChatMessageFacadeServiceImpl implements ChatMessageFacadeService {
         // 更新数据库
         int result = chatMessageMapper.updateById(updatedChatMessage);
         if (result <= 0) {
-            throw new BizException("追加聊天消息内容失败");
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_APPEND_FAILED);
         }
 
         // 返回聊天消息ID
@@ -164,12 +169,12 @@ public class ChatMessageFacadeServiceImpl implements ChatMessageFacadeService {
     public void deleteChatMessage(String chatMessageId) {
         ChatMessage chatMessage = chatMessageMapper.selectById(chatMessageId);
         if (chatMessage == null) {
-            throw new BizException("聊天消息不存在: " + chatMessageId);
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_NOT_FOUND, "聊天消息不存在: " + chatMessageId);
         }
 
         int result = chatMessageMapper.deleteById(chatMessageId);
         if (result <= 0) {
-            throw new BizException("删除聊天消息失败");
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_DELETE_FAILED);
         }
     }
 
@@ -179,7 +184,7 @@ public class ChatMessageFacadeServiceImpl implements ChatMessageFacadeService {
             // 查询现有的聊天消息
             ChatMessage existingChatMessage = chatMessageMapper.selectById(chatMessageId);
             if (existingChatMessage == null) {
-                throw new BizException("聊天消息不存在: " + chatMessageId);
+                throw BizException.of(ErrorCode.CHAT_MESSAGE_NOT_FOUND, "聊天消息不存在: " + chatMessageId);
             }
 
             // 将现有 ChatMessage 转换为 ChatMessageDTO
@@ -201,10 +206,10 @@ public class ChatMessageFacadeServiceImpl implements ChatMessageFacadeService {
             // 更新数据库
             int result = chatMessageMapper.updateById(updatedChatMessage);
             if (result <= 0) {
-                throw new BizException("更新聊天消息失败");
+                throw BizException.of(ErrorCode.CHAT_MESSAGE_UPDATE_FAILED);
             }
         } catch (JsonProcessingException e) {
-            throw new BizException("更新聊天消息时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.CHAT_MESSAGE_UPDATE_FAILED, "更新聊天消息时发生序列化错误: " + e.getMessage(), e);
         }
     }
 }

@@ -28,6 +28,26 @@ public class ChunkBgeM3 {
 
     private LocalDateTime updatedAt;
 
+    /**
+     * 父级标题 ID（用于构建标题树）
+     */
+    private String parentId;
+
+    /**
+     * 类型：0=标题, 1=分片
+     */
+    private Integer type;
+
+    /**
+     * 标题路径（如：[一级标题 > 二级标题 > 当前标题]）
+     */
+    private String headingPath;
+
+    /**
+     * 标题层级（1-6）
+     */
+    private Integer headingLevel;
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -47,7 +67,11 @@ public class ChunkBgeM3 {
             && (this.getMetadata() == null ? other.getMetadata() == null : this.getMetadata().equals(other.getMetadata()))
             && (this.getEmbedding() == null ? other.getEmbedding() == null : Arrays.equals(this.getEmbedding(), other.getEmbedding()))
             && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
-            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()))
+            && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()))
+            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+            && (this.getHeadingPath() == null ? other.getHeadingPath() == null : this.getHeadingPath().equals(other.getHeadingPath()))
+            && (this.getHeadingLevel() == null ? other.getHeadingLevel() == null : this.getHeadingLevel().equals(other.getHeadingLevel()));
     }
 
     @Override
@@ -62,6 +86,10 @@ public class ChunkBgeM3 {
         result = prime * result + ((getEmbedding() == null) ? 0 : Arrays.hashCode(getEmbedding()));
         result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
         result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
+        result = prime * result + ((getParentId() == null) ? 0 : getParentId().hashCode());
+        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getHeadingPath() == null) ? 0 : getHeadingPath().hashCode());
+        result = prime * result + ((getHeadingLevel() == null) ? 0 : getHeadingLevel().hashCode());
         return result;
     }
 
@@ -78,6 +106,10 @@ public class ChunkBgeM3 {
                 ", embedding=" + Arrays.toString(embedding) +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", parentId=" + parentId +
+                ", type=" + type +
+                ", headingPath=" + headingPath +
+                ", headingLevel=" + headingLevel +
                 "]";
     }
 }

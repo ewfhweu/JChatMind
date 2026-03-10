@@ -11,6 +11,8 @@
         <result property="filetype" column="filetype" jdbcType="VARCHAR"/>
         <result property="size" column="size" jdbcType="BIGINT"/>
         <result property="metadata" column="metadata" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="deleted" column="deleted" jdbcType="BOOLEAN"/>
         <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
         <result property="updatedAt" column="updated_at" jdbcType="TIMESTAMP"/>
     </resultMap>
@@ -18,7 +20,7 @@
     <sql id="Base_Column_List">
         id,kb_id,filename,
         filetype,size,metadata,
-        created_at,updated_at
+        status,deleted,created_at,updated_at
     </sql>
 
     <insert id="insert" parameterType="com.kama.jchatmind.model.entity.Document"
@@ -30,6 +32,8 @@
             filetype,
             size,
             metadata,
+            status,
+            deleted,
             created_at,
             updated_at
         )
@@ -40,6 +44,8 @@
                 #{filetype},
                 #{size},
                 CAST(#{metadata} AS jsonb),
+                #{status},
+                #{deleted},
                 #{createdAt},
                 #{updatedAt}
             )
@@ -53,6 +59,8 @@
             filetype,
             size,
             metadata::text AS metadata,
+            status,
+            deleted,
             created_at,
             updated_at
         FROM document
@@ -67,9 +75,28 @@
             filetype,
             size,
             metadata::text AS metadata,
+            status,
+            deleted,
             created_at,
             updated_at
         FROM document
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectAllNotDeleted" resultMap="BaseResultMap">
+        SELECT
+            id,
+            kb_id,
+            filename,
+            filetype,
+            size,
+            metadata::text AS metadata,
+            status,
+            deleted,
+            created_at,
+            updated_at
+        FROM document
+        WHERE deleted = false OR deleted IS NULL
         ORDER BY updated_at DESC
     </select>
 
@@ -81,12 +108,57 @@
             filetype,
             size,
             metadata::text AS metadata,
+            status,
+            deleted,
             created_at,
             updated_at
         FROM document
         WHERE kb_id = CAST(#{kbId} AS uuid)
         ORDER BY updated_at DESC
     </select>
+
+    <select id="selectByKbIdNotDeleted" resultMap="BaseResultMap">
+        SELECT
+            id,
+            kb_id,
+            filename,
+            filetype,
+            size,
+            metadata::text AS metadata,
+            status,
+            deleted,
+            created_at,
+            updated_at
+        FROM document
+        WHERE kb_id = CAST(#{kbId} AS uuid)
+        AND (deleted = false OR deleted IS NULL)
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectDeleted" resultMap="BaseResultMap">
+        SELECT
+            id,
+            kb_id,
+            filename,
+            filetype,
+            size,
+            metadata::text AS metadata,
+            status,
+            deleted,
+            created_at,
+            updated_at
+        FROM document
+        WHERE deleted = true
+        ORDER BY updated_at DESC
+    </select>
+
+    <update id="softDeleteById">
+        UPDATE document
+        SET
+            deleted = true,
+            updated_at = NOW()
+        WHERE id = CAST(#{id} AS uuid)
+    </update>
 
     <delete id="deleteById">
         DELETE FROM document WHERE id = CAST(#{id} AS uuid)
@@ -109,6 +181,12 @@
             </if>
             <if test="metadata != null">
                 metadata = CAST(#{metadata} AS jsonb),
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted},
             </if>
             updated_at = NOW()
         </set>

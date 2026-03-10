@@ -19,6 +19,11 @@ public class ChunkBgeM3DTO {
     private MetaData metadata;
 
     private float[] embedding;
+    // 添加标题相关字段
+    private String parentId;
+    private Integer type;
+    private String headingPath;
+    private Integer headingLevel;
 
     private LocalDateTime createdAt;
 

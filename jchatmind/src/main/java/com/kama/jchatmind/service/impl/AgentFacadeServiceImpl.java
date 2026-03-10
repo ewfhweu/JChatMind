@@ -3,6 +3,7 @@ package com.kama.jchatmind.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kama.jchatmind.converter.AgentConverter;
 import com.kama.jchatmind.exception.BizException;
+import com.kama.jchatmind.exception.ErrorCode;
 import com.kama.jchatmind.mapper.AgentMapper;
 import com.kama.jchatmind.model.dto.AgentDTO;
 import com.kama.jchatmind.model.entity.Agent;
@@ -61,15 +62,15 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
             // 插入数据库，ID 由数据库自动生成
             int result = agentMapper.insert(agent);
             if (result <= 0) {
-                throw new BizException("创建 agent 失败");
+                throw BizException.of(ErrorCode.AGENT_CREATE_FAILED);
             }
-            
+
             // 返回生成的 agentId
             return CreateAgentResponse.builder()
                     .agentId(agent.getId())
                     .build();
         } catch (JsonProcessingException e) {
-            throw new BizException("创建 agent 时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.AGENT_CREATE_FAILED, "创建 agent 时发生序列化错误: " + e.getMessage(), e);
         }
     }
 
@@ -77,12 +78,12 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
     public void deleteAgent(String agentId) {
         Agent agent = agentMapper.selectById(agentId);
         if (agent == null) {
-            throw new BizException("Agent 不存在: " + agentId);
+            throw BizException.of(ErrorCode.AGENT_NOT_FOUND, "Agent 不存在: " + agentId);
         }
-        
+
         int result = agentMapper.deleteById(agentId);
         if (result <= 0) {
-            throw new BizException("删除 agent 失败");
+            throw BizException.of(ErrorCode.AGENT_DELETE_FAILED);
         }
     }
 
@@ -92,7 +93,7 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
             // 查询现有的 agent
             Agent existingAgent = agentMapper.selectById(agentId);
             if (existingAgent == null) {
-                throw new BizException("Agent 不存在: " + agentId);
+                throw BizException.of(ErrorCode.AGENT_NOT_FOUND, "Agent 不存在: " + agentId);
             }
             
             // 将现有 Agent 转换为 AgentDTO
@@ -112,10 +113,10 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
             // 更新数据库
             int result = agentMapper.updateById(updatedAgent);
             if (result <= 0) {
-                throw new BizException("更新 agent 失败");
+                throw BizException.of(ErrorCode.AGENT_UPDATE_FAILED);
             }
         } catch (JsonProcessingException e) {
-            throw new BizException("更新 agent 时发生序列化错误: " + e.getMessage());
+            throw BizException.of(ErrorCode.AGENT_UPDATE_FAILED, "更新 agent 时发生序列化错误: " + e.getMessage(), e);
         }
     }
 }
